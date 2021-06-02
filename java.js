@@ -1,44 +1,77 @@
-const startBtn = document.querySelector('.start-btn');
+const talk = document.querySelector('.talk');
+const voice2text = document.querySelector('.voice2text');
+const voicetext2 = document.querySelector('.voicetext2');
 
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recorder = new SpeechRecognition();
 
-const recognition = new webkitSpeechRecognition();
-recognition.continuos = false;
-recognition.lang = "en-US";
-recognition.interimResults = false;
-recognition.maxAlternatives = 1;
+recorder.onstart = () => {
+    console.log('voice activate, you can talk');
+}
 
-const synth = window.speechSynthesis
+recorder.onresult = (event) => {
+    console.log(event);
+}
 
-startBtn.addEventListener('click', () => {
-recognition.start();
-
-});
-
-let utter = new SpeechSynthesisUtterance('Hola, Como estas?');
-utter.onend = () => {
-
-    recognition.start();
+recorder.onstart = () => {
+    console.log('Voz activada, puedes hablar');
 };
 
+recorder.onresult = (event) => {
+    console.log(event);
+};
 
+talk.addEventListener('click', () => {
+    recorder.start();
+});
 
-recognition.onresult = (e) => {
+recorder.onresult = (event) => {
+    const current = event.resultIndex;
+    const transcript = event.results[current][0].transcript;
+    voice2text.textContent = transcript;
+};
 
-    const transcript = e.results.length - [1][0].transcript.trim();
-        if (transcript === 'Hola'){
+function botVoice(message){
 
-            recognition.stop();
+    const speech = new SpeechSynthesisUtterance();
+    speech.text = "No te entiendo";
 
-           utter.text = 'Hola, Como estas?';
-           utter.onend = () => {
-            recognition.start();
-           };
-           synth.speak(utter);
-        }
-        else if (transcript === 'Adios') {
-            recognition.stop();
-            utter.text = "Igualmente NOs vemos luego.";
-            synth.speak(utter);
-        }
+    if(message.includes('Hola')){
+        speech.text = "Hola... Estoy para ayudarte.";
+    }   
+    
+    if(message.includes('Cómo estás')){
+        speech.text = "Estoy bien, gracias por preguntar";
+    }
 
+    if(message.includes('hora')){
+        let gethours = new Date();
+        let minuto = gethours.getMinutes();
+        let hora = gethours.getHours();
+        speech.text = 'son las: ' + hora + ':' + minuto ;
+    }
+
+    if(message.includes('fecha')){
+        let getdate = new Date();
+        let mes = getdate.getMonth() +1;
+        let dia = getdate.getDate();
+        let año = getdate.getFullYear();
+        speech.text = 'Hoy es : ' + dia + '/' + mes + '/' + año ;
+    }
+
+    
+    voicetext2.textContent = speech.text; 
+    speech.volume = 1;
+    speech.rate = 1;
+    speech.pitch = 1;
+    window.speechSynthesis.speak(speech)
+
+};
+
+recorder.onresult = function(event){
+    const current = event.resultIndex;
+    const transcript = event.results[current][0].transcript;
+    voice2text.textContent = transcript;
+
+    botVoice(transcript);
 };
